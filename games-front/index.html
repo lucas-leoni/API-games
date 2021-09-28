@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Games Front</title>
+  </head>
+  <body>
+    <header>
+      <h1>Games Front</h1>
+    </header>
+
+    <section>
+      <h1>Games</h1>
+      <p>Aqui estão os jogos salvos no Banco de Dados.</p>
+      <ul id="games"></ul>
+    </section>
+
+    <section>
+      <h1>Adicionar Jogo</h1>
+      <form action="post">
+        <input
+          type="text"
+          name="name"
+          id="name"
+          placeholder="Insira o nome do jogo"
+        />
+
+        <input type="number" name="price" id="price" placeholder="Preço" />
+
+        <input type="number" name="year" id="year" placeholder="Ano" />
+
+        <button type="button" onclick="createGame()">Adicionar</button>
+      </form>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+      onLoad();
+
+      async function onLoad() {
+        // consultando a rota /get - games
+        const url = "http://localhost:3000/api/games";
+        try {
+          const response = await axios.get(url);
+          getAllGames(response);
+        } catch (error) {
+          //alert("Ops, deu erro na request!");
+          console.error(error);
+        }
+      }
+
+      function buildDeleteGame(item) {
+        const deleteButton = document.createElement("button");
+        deleteButton.innerHTML = "Remover";
+        item.appendChild(deleteButton);
+
+        deleteButton.addEventListener("click", () => {
+          deleteGame(item);
+        });
+      }
+
+      function deleteGame(item) {
+        console.log(item);
+        const gameId = item.getAttribute("data-id");
+        const url = `http://localhost:3000/api/game/${gameId}`;
+
+        axios
+          .delete(url)
+          .then((response) => {
+            console.log(response);
+            if (response.status === 200) {
+              alert("Jogo removido com sucesso!");
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function createGame() {
+        const nameField = document.querySelector("#name").value;
+        const priceField = document.querySelector("#price").value;
+        const yearField = document.querySelector("#year").value;
+
+        const url = "http://localhost:3000/api/game";
+        const data = {
+          name: nameField,
+          price: priceField,
+          year: yearField,
+        };
+
+        axios
+          .post(url, data)
+          .then((response) => {
+            if (response.status === 200) {
+              alert("Boa! Jogo adicionado com sucesso!");
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function getAllGames(response) {
+        const games = response.data;
+        const list = document.getElementById("games");
+
+        games.forEach((game) => {
+          const item = document.createElement("li");
+
+          item.setAttribute("data-id", game.id);
+
+          item.innerHTML = `${game.id} - ${game.name} - ${game.price}`;
+          list.appendChild(item);
+
+          buildDeleteGame(item);
+        });
+      }
+    </script>
+  </body>
+</html>
